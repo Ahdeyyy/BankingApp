@@ -34,7 +34,7 @@ namespace BankingApp
         /// - Timestamp should represent a valid date and time.
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if any input parameters are invalid (e.g., null, empty, or incorrect values).</exception>
-        public Transaction(string transactionId, string accountId, string type, decimal amount, DateTime timestamp, string recipientAccountId = null)
+        public Transaction(string transactionId, string accountId, string type, decimal amount, DateTime timestamp, string recipientAccountId)
         {
             if (string.IsNullOrEmpty(transactionId))
                 throw new ArgumentException("Transaction ID cannot be null or empty.", nameof(transactionId));
