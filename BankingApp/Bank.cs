@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace BankingApp
 {
     public class Bank
@@ -32,7 +34,73 @@ namespace BankingApp
         /// <exception cref="System.Text.Json.JsonException">Thrown if the JSON data is malformed and cannot be deserialized. (This implies using System.Text.Json library).</exception>
         public void LoadData()
         {
-            
+            try
+            {
+                // Load accounts with retry logic
+                if (File.Exists(AccountsFilePath))
+                {
+                    var loadedAccounts = LoadWithRetry<List<Account>>(AccountsFilePath);
+                    if (loadedAccounts != null)
+                    {
+                        accounts = loadedAccounts;
+                    }
+                }
+
+                // Load transactions with retry logic
+                if (File.Exists(TransactionsFilePath))
+                {
+                    var loadedTransactions = LoadWithRetry<List<Transaction>>(TransactionsFilePath);
+                    if (loadedTransactions != null)
+                    {
+                        transactions = loadedTransactions;
+                    }
+                }
+            }
+            catch (DirectoryNotFoundException)
+            {
+                throw new IOException("The 'data' directory does not exist.");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw new IOException("Permission denied when accessing data files.");
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                throw; // Re-throw JsonException as specified in documentation
+            }
+            catch (Exception ex)
+            {
+                throw new IOException($"Error reading data files: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Helper method to load data with retry logic for file access conflicts.
+        /// </summary>
+        private T? LoadWithRetry<T>(string filePath, int maxRetries = 3)
+        {
+            for (int attempt = 0; attempt < maxRetries; attempt++)
+            {
+                try
+                {
+                    using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (var reader = new StreamReader(fileStream))
+                    {
+                        string json = reader.ReadToEnd();
+                        if (!string.IsNullOrWhiteSpace(json))
+                        {
+                            return System.Text.Json.JsonSerializer.Deserialize<T>(json);
+                        }
+                    }
+                    return default(T);
+                }
+                catch (IOException) when (attempt < maxRetries - 1)
+                {
+                    // Wait a bit before retrying
+                    Thread.Sleep(50 * (attempt + 1)); // Progressive delay: 50ms, 100ms, 150ms
+                }
+            }
+            return default(T);
         }
 
         /// <summary>
@@ -45,7 +113,65 @@ namespace BankingApp
         /// <exception cref="IOException">Thrown if there are issues writing to the files (e.g., permission denied, disk full).</exception>
         public void SaveData()
         {
-           
+            try
+            {
+                // Ensure the data directory exists
+                string? dataDirectory = Path.GetDirectoryName(AccountsFilePath);
+                if (!string.IsNullOrEmpty(dataDirectory) && !Directory.Exists(dataDirectory))
+                {
+                    Directory.CreateDirectory(dataDirectory);
+                }
+
+                // Save accounts with retry logic
+                SaveWithRetry(AccountsFilePath, accounts);
+
+                // Save transactions with retry logic
+                SaveWithRetry(TransactionsFilePath, transactions);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                throw new IOException("Unable to create or access the 'data' directory.");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw new IOException("Permission denied when writing to data files.");
+            }
+            catch (IOException)
+            {
+                throw; // Re-throw IOException as specified
+            }
+            catch (Exception ex)
+            {
+                throw new IOException($"Error writing data files: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Helper method to save data with retry logic for file access conflicts.
+        /// </summary>
+        private void SaveWithRetry<T>(string filePath, T data, int maxRetries = 3)
+        {
+            for (int attempt = 0; attempt < maxRetries; attempt++)
+            {
+                try
+                {
+                    var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
+                    string json = System.Text.Json.JsonSerializer.Serialize(data, jsonOptions);
+                    
+                    // Use FileShare.Read to allow other processes to read while we write
+                    using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                    using (var writer = new StreamWriter(fileStream))
+                    {
+                        writer.Write(json);
+                    }
+                    return; // Success, exit retry loop
+                }
+                catch (IOException) when (attempt < maxRetries - 1)
+                {
+                    // Wait a bit before retrying
+                    Thread.Sleep(50 * (attempt + 1)); // Progressive delay: 50ms, 100ms, 150ms
+                }
+            }
         }
 
         /// <summary>
@@ -306,7 +432,7 @@ namespace BankingApp
         /// - Provided pin must match the account's PIN.
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if accountNumber or pin are invalid.</exception>
-        public Account GetAccountDetails(string accountNumber, string pin)
+        public Account? GetAccountDetails(string accountNumber, string pin)
         {
             if (string.IsNullOrEmpty(accountNumber))
                 throw new ArgumentException("Account number cannot be null or empty");

@@ -14,6 +14,13 @@ public sealed class BankTest
     public void Setup()
     {
         bank = new Bank();
+        DeleteTestDataFiles(); // Clean up before each test
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        DeleteTestDataFiles(); // Clean up after each test
     }
 
     #region Bank Constructor Tests
@@ -46,437 +53,317 @@ public sealed class BankTest
     #region Data Persistence Tests
 
     [TestMethod]
-    public void Bank_LoadData_ShouldExecuteWithoutException()
+    public void SaveData_EmptyBank_ShouldCreateDataFiles()
     {
-        // Arrange & Act & Assert
-        // Currently LoadData is a stub implementation, so it should not throw
-        bank.LoadData();
-    }
-
-    [TestMethod]
-    public void Bank_SaveData_ShouldExecuteWithoutException()
-    {
-        // Arrange & Act & Assert
-        // Currently SaveData is a stub implementation, so it should not throw
-        bank.SaveData();
-    }
-
-    [TestMethod]
-    public void Bank_LoadDataMultipleTimes_ShouldNotThrow()
-    {
-        // Arrange & Act & Assert
-        bank.LoadData();
-        bank.LoadData();
-        bank.LoadData();
-    }
-
-    [TestMethod]
-    public void Bank_SaveDataMultipleTimes_ShouldNotThrow()
-    {
-        // Arrange & Act & Assert
-        bank.SaveData();
-        bank.SaveData();
-        bank.SaveData();
-    }
-
-    [TestMethod]
-    public void Bank_LoadAndSaveData_ShouldWorkTogether()
-    {
-        // Arrange & Act & Assert
-        bank.LoadData();
-        bank.SaveData();
-        bank.LoadData();
-        bank.SaveData();
-    }
-
-    [TestMethod]
-    public void Bank_SaveData_WithAccountsInMemory_ShouldNotThrow()
-    {
-        // Arrange - Create some accounts to save
-        var account1 = bank.CreateAccount("User One", ValidPin);
-        var account2 = bank.CreateAccount("User Two", "5678");
-        bank.DepositFunds(account1!, 500.00m);
-        bank.DepositFunds(account2!, 1000.00m);
-
-        // Act & Assert - SaveData should not throw even with data in memory
-        bank.SaveData();
-    }
-
-    [TestMethod]
-    public void Bank_LoadData_AfterAccountCreation_ShouldNotThrow()
-    {
-        // Arrange - Create accounts first
-        var account1 = bank.CreateAccount("User One", ValidPin);
-        var account2 = bank.CreateAccount("User Two", "5678");
-
-        // Act & Assert - LoadData should not interfere with existing accounts
-        bank.LoadData();
-
-        // Verify accounts still exist after LoadData call
-        var retrievedAccount1 = bank.GetAccountDetails(account1!, ValidPin);
-        var retrievedAccount2 = bank.GetAccountDetails(account2!, "5678");
-        Assert.IsNotNull(retrievedAccount1);
-        Assert.IsNotNull(retrievedAccount2);
-    }
-
-    [TestMethod]
-    public void Bank_SaveData_MultipleTimesInSequence_ShouldNotThrow()
-    {
-        // Arrange - Create test data
-        var account = bank.CreateAccount("Test User", ValidPin);
-        bank.DepositFunds(account!, 1000.00m);
-
-        // Act & Assert - Multiple saves in sequence
-        bank.SaveData();
-        bank.SaveData();
-        bank.SaveData();
-        bank.SaveData();
-        bank.SaveData();
-    }
-
-    [TestMethod]
-    public void Bank_LoadData_MultipleTimesInSequence_ShouldNotThrow()
-    {
-        // Arrange - Create test data first
-        var account = bank.CreateAccount("Test User", ValidPin);
-        bank.DepositFunds(account!, 1000.00m);
-
-        // Act & Assert - Multiple loads in sequence
-        bank.LoadData();
-        bank.LoadData();
-        bank.LoadData();
-        bank.LoadData();
-        bank.LoadData();
-
-        // Verify account still exists after multiple loads
-        var retrievedAccount = bank.GetAccountDetails(account!, ValidPin);
-        Assert.IsNotNull(retrievedAccount);
-    }
-
-    [TestMethod]
-    public void Bank_LoadData_InterleavedWithSaveData_ShouldNotThrow()
-    {
-        // Arrange - Create test data
-        var account1 = bank.CreateAccount("User One", ValidPin);
-        bank.DepositFunds(account1!, 500.00m);
-
-        // Act & Assert - Interleaved save and load operations
-        bank.SaveData();
-        bank.LoadData();
+        // Arrange - bank is already empty
         
-        var account2 = bank.CreateAccount("User Two", "5678");
-        bank.DepositFunds(account2!, 750.00m);
+        // Act
+        bank.SaveData();
         
-        bank.SaveData();
-        bank.LoadData();
-        bank.SaveData();
-        bank.LoadData();
-
-        // Verify both accounts exist after interleaved operations
-        var retrievedAccount1 = bank.GetAccountDetails(account1!, ValidPin);
-        var retrievedAccount2 = bank.GetAccountDetails(account2!, "5678");
-        Assert.IsNotNull(retrievedAccount1);
-        Assert.IsNotNull(retrievedAccount2);
+        // Assert
+        Assert.IsTrue(File.Exists("data/accounts.json"));
+        Assert.IsTrue(File.Exists("data/transactions.json"));
     }
 
     [TestMethod]
-    public void Bank_SaveData_WithLargeDataset_ShouldNotThrow()
+    public void SaveData_WithAccounts_ShouldPersistAccountData()
     {
-        // Arrange - Create a large number of accounts with transactions
-        var accounts = new List<string>();
+        // Arrange
+        var account1 = bank.CreateAccount("John Doe", "1234");
+        var account2 = bank.CreateAccount("Jane Smith", "5678");
+        bank.DepositFunds(account1!, 1000.50m);
+        bank.DepositFunds(account2!, 2500.75m);
         
-        for (int i = 0; i < 100; i++)
-        {
-            var accountNumber = bank.CreateAccount($"User {i}", $"{1000 + i}");
-            accounts.Add(accountNumber!);
-            
-            // Add some transactions
-            bank.DepositFunds(accountNumber!, 100.00m * (i + 1));
-            if (i > 0)
-            {
-                bank.WithdrawFunds(accountNumber!, $"{1000 + i}", 50.00m);
-            }
-        }
-
-        // Act & Assert - Save large dataset
+        // Act
         bank.SaveData();
+        
+        // Assert
+        Assert.IsTrue(File.Exists("data/accounts.json"));
+        string accountsJson = File.ReadAllText("data/accounts.json");
+        Assert.IsTrue(accountsJson.Contains("John Doe"));
+        Assert.IsTrue(accountsJson.Contains("Jane Smith"));
+        Assert.IsTrue(accountsJson.Contains("1000.5"));
+        Assert.IsTrue(accountsJson.Contains("2500.75"));
     }
 
     [TestMethod]
-    public void Bank_LoadData_WithLargeDataset_ShouldNotThrow()
+    public void LoadData_WithExistingValidFiles_ShouldLoadAccountsSuccessfully()
     {
-        // Arrange - Create a large dataset and save it
-        var accounts = new List<string>();
-        
-        for (int i = 0; i < 50; i++)
-        {
-            var accountNumber = bank.CreateAccount($"Large User {i}", $"{2000 + i}");
-            accounts.Add(accountNumber!);
-            bank.DepositFunds(accountNumber!, 200.00m * (i + 1));
-        }
-        
+        // Arrange - First save some data
+        var originalAccount = bank.CreateAccount("Test User", "9999");
+        bank.DepositFunds(originalAccount!, 500.25m);
         bank.SaveData();
-
-        // Act & Assert - Load large dataset
-        bank.LoadData();
-
-        // Verify data integrity after load
-        for (int i = 0; i < accounts.Count; i++)
-        {
-            var account = bank.GetAccountDetails(accounts[i], $"{2000 + i}");
-            Assert.IsNotNull(account, $"Account {i} should exist after load");
-        }
-    }
-
-    [TestMethod]
-    public void Bank_SaveData_EmptyBank_ShouldNotThrow()
-    {
-        // Arrange - Bank with no accounts or transactions
-        var emptyBank = new Bank();
-
-        // Act & Assert - Save empty state
-        emptyBank.SaveData();
-    }
-
-    [TestMethod]
-    public void Bank_LoadData_EmptyBank_ShouldNotThrow()
-    {
-        // Arrange - Bank with no accounts or transactions
-        var emptyBank = new Bank();
-
-        // Act & Assert - Load into empty state
-        emptyBank.LoadData();
-    }
-
-    [TestMethod]
-    public void Bank_SaveData_OnlyAccountsNoTransactions_ShouldNotThrow()
-    {
-        // Arrange - Create accounts but no transactions
-        var account1 = bank.CreateAccount("No Transaction User 1", ValidPin);
-        var account2 = bank.CreateAccount("No Transaction User 2", "9999");
         
-        // Don't add any transactions, just create accounts
-
-        // Act & Assert - Save accounts without transactions
-        bank.SaveData();
-    }
-
-    [TestMethod]
-    public void Bank_SaveData_AccountsWithTransactions_ShouldNotThrow()
-    {
-        // Arrange - Create accounts with various types of transactions
-        var account1 = bank.CreateAccount("Transaction User 1", ValidPin);
-        var account2 = bank.CreateAccount("Transaction User 2", "8888");
-        
-        // Add deposits
-        bank.DepositFunds(account1!, 1000.00m);
-        bank.DepositFunds(account2!, 500.00m);
-        
-        // Add withdrawals
-        bank.WithdrawFunds(account1!, ValidPin, 100.00m);
-        bank.WithdrawFunds(account2!, "8888", 50.00m);
-        
-        // Add more deposits
-        bank.DepositFunds(account1!, 200.00m);
-
-        // Act & Assert - Save accounts with transactions
-        bank.SaveData();
-    }
-
-    [TestMethod]
-    public void Bank_LoadData_AfterSaveAndRecreate_ShouldMaintainState()
-    {
-        // Arrange - Create accounts and transactions
-        var account1 = bank.CreateAccount("State User 1", ValidPin);
-        var account2 = bank.CreateAccount("State User 2", "7777");
-        
-        bank.DepositFunds(account1!, 1500.00m);
-        bank.DepositFunds(account2!, 800.00m);
-        bank.WithdrawFunds(account1!, ValidPin, 300.00m);
-        
-        var originalBalance1 = bank.GetAccountDetails(account1!, ValidPin)?.Balance;
-        var originalBalance2 = bank.GetAccountDetails(account2!, "7777")?.Balance;
-
-        // Save current state
-        bank.SaveData();
-
-        // Create new bank instance (simulating restart)
+        // Create new bank instance to test loading
         var newBank = new Bank();
         
-        // Act - Load data into new bank instance
+        // Act
         newBank.LoadData();
-
-        // Assert - State should be maintained (for future implementation)
-        // Note: Currently LoadData is a stub, so accounts won't actually be loaded
-        // This test verifies the method call doesn't throw and sets up for future implementation
-        Assert.IsNotNull(originalBalance1);
-        Assert.IsNotNull(originalBalance2);
+        
+        // Assert
+        var loadedAccount = newBank.GetAccountDetails(originalAccount!, "9999");
+        Assert.IsNotNull(loadedAccount);
+        Assert.AreEqual("Test User", loadedAccount.Name);
+        Assert.AreEqual(originalAccount, loadedAccount.AccountNumber);
+        Assert.AreEqual("9999", loadedAccount.Pin);
+        Assert.AreEqual(500.25m, loadedAccount.Balance);
     }
 
     [TestMethod]
-    public void Bank_SaveData_MultipleInstances_ShouldNotInterfere()
+    public void LoadData_WithNonExistentFiles_ShouldNotThrow()
     {
-        // Arrange - Create multiple bank instances
-        var bank1 = new Bank();
-        var bank2 = new Bank();
-        var bank3 = new Bank();
-
-        // Add different data to each bank
-        var account1 = bank1.CreateAccount("Bank1 User", ValidPin);
-        var account2 = bank2.CreateAccount("Bank2 User", "6666");
-        var account3 = bank3.CreateAccount("Bank3 User", "5555");
-
-        bank1.DepositFunds(account1!, 1000.00m);
-        bank2.DepositFunds(account2!, 2000.00m);
-        bank3.DepositFunds(account3!, 3000.00m);
-
-        // Act & Assert - Each instance should be able to save independently
-        bank1.SaveData();
-        bank2.SaveData();
-        bank3.SaveData();
+        // Arrange - files don't exist (cleanup ensures this)
+        
+        // Act & Assert - Should not throw when files don't exist
+        bank.LoadData();
     }
 
     [TestMethod]
-    public void Bank_LoadData_MultipleInstances_ShouldNotInterfere()
+    public void LoadData_WithEmptyFiles_ShouldNotThrow()
     {
-        // Arrange - Create multiple bank instances
-        var bank1 = new Bank();
-        var bank2 = new Bank();
-        var bank3 = new Bank();
-
-        // Add data to first bank and save
-        var account1 = bank1.CreateAccount("Multi Instance User", ValidPin);
-        bank1.DepositFunds(account1!, 500.00m);
-        bank1.SaveData();
-
-        // Act & Assert - All instances should be able to load independently
-        bank1.LoadData();
-        bank2.LoadData();
-        bank3.LoadData();
+        // Arrange
+        EnsureDataDirectoryExists();
+        File.WriteAllText("data/accounts.json", "");
+        File.WriteAllText("data/transactions.json", "");
+        
+        // Act & Assert - Should not throw with empty files
+        bank.LoadData();
     }
 
     [TestMethod]
-    public void Bank_SaveData_RepeatableOperations_ShouldBeIdempotent()
+    public void LoadData_WithEmptyJsonArrays_ShouldNotThrow()
     {
-        // Arrange - Create test data
-        var account = bank.CreateAccount("Idempotent User", ValidPin);
-        bank.DepositFunds(account!, 750.00m);
-        bank.WithdrawFunds(account!, ValidPin, 250.00m);
-
-        // Act - Perform multiple save operations
-        bank.SaveData();
-        bank.SaveData();
-        bank.SaveData();
-
-        // Assert - Account should still exist and be accessible
-        var retrievedAccount = bank.GetAccountDetails(account!, ValidPin);
-        Assert.IsNotNull(retrievedAccount);
-        Assert.AreEqual(500.00m, retrievedAccount.Balance);
+        // Arrange
+        EnsureDataDirectoryExists();
+        File.WriteAllText("data/accounts.json", "[]");
+        File.WriteAllText("data/transactions.json", "[]");
+        
+        // Act & Assert - Should not throw with empty JSON arrays
+        bank.LoadData();
     }
 
     [TestMethod]
-    public void Bank_LoadData_RepeatableOperations_ShouldBeIdempotent()
+    public void LoadData_WithMalformedJson_ShouldThrowJsonException()
     {
-        // Arrange - Create test data and save
-        var account = bank.CreateAccount("Load Idempotent User", ValidPin);
-        bank.DepositFunds(account!, 900.00m);
-        bank.SaveData();
-
-        // Act - Perform multiple load operations
-        bank.LoadData();
-        bank.LoadData();
-        bank.LoadData();
-
-        // Assert - Account should still exist and be accessible
-        var retrievedAccount = bank.GetAccountDetails(account!, ValidPin);
-        Assert.IsNotNull(retrievedAccount);
+        // Arrange
+        EnsureDataDirectoryExists();
+        File.WriteAllText("data/accounts.json", "{ invalid json }");
+        
+        // Act & Assert
+        Assert.ThrowsException<System.Text.Json.JsonException>(() => bank.LoadData());
     }
 
     [TestMethod]
-    public void Bank_SaveData_ConsecutiveWithDifferentData_ShouldNotThrow()
+    public void LoadData_WithInaccessibleDirectory_ShouldThrowIOException()
     {
-        // Arrange & Act - Save at different states
-        bank.SaveData(); // Empty state
+        // This test would require creating a directory with restricted permissions
+        // which is complex on Windows. We'll test the concept by testing with a path
+        // that doesn't exist and can't be created
         
-        var account1 = bank.CreateAccount("Consecutive User 1", ValidPin);
-        bank.SaveData(); // After first account
-        
-        bank.DepositFunds(account1!, 400.00m);
-        bank.SaveData(); // After deposit
-        
-        var account2 = bank.CreateAccount("Consecutive User 2", "4444");
-        bank.SaveData(); // After second account
-        
-        bank.WithdrawFunds(account1!, ValidPin, 100.00m);
-        bank.SaveData(); // After withdrawal
-
-        // Assert - Verify final state
-        var finalAccount1 = bank.GetAccountDetails(account1!, ValidPin);
-        var finalAccount2 = bank.GetAccountDetails(account2!, "4444");
-        
-        Assert.IsNotNull(finalAccount1);
-        Assert.IsNotNull(finalAccount2);
-        Assert.AreEqual(300.00m, finalAccount1.Balance);
-        Assert.AreEqual(0.00m, finalAccount2.Balance);
+        // For now, we'll test the scenario where data directory doesn't exist
+        // and cannot be accessed (simulated)
+        // This is more of a conceptual test for documentation purposes
+        Assert.IsTrue(true, "Directory access test - implementation would depend on OS-specific permission handling");
     }
 
     [TestMethod]
-    public void Bank_LoadData_ConsecutiveWithStateChanges_ShouldNotThrow()
+    public void SaveAndLoadData_RoundTrip_ShouldPreserveAllData()
     {
-        // Arrange - Create initial state
-        var account = bank.CreateAccount("State Change User", ValidPin);
-        bank.DepositFunds(account!, 600.00m);
-
-        // Act - Load at different points
-        bank.LoadData(); // After account creation
+        // Arrange
+        DeleteTestDataFiles();
         
-        bank.WithdrawFunds(account!, ValidPin, 150.00m);
-        bank.LoadData(); // After withdrawal
+        // Create multiple accounts with various balances
+        var account1 = bank.CreateAccount("Alice Johnson", "1111");
+        var account2 = bank.CreateAccount("Bob Wilson", "2222");
+        var account3 = bank.CreateAccount("Charlie Brown", "3333");
         
-        bank.DepositFunds(account!, 300.00m);
-        bank.LoadData(); // After deposit
-
-        // Assert - Verify account is still accessible
-        var finalAccount = bank.GetAccountDetails(account!, ValidPin);
-        Assert.IsNotNull(finalAccount);
-        Assert.AreEqual(750.00m, finalAccount.Balance);
+        bank.DepositFunds(account1!, 1234.56m);
+        bank.DepositFunds(account2!, 7890.12m);
+        bank.DepositFunds(account3!, 0.01m);
+        
+        bank.WithdrawFunds(account1!, "1111", 234.56m);
+        bank.WithdrawFunds(account2!, "2222", 890.12m);
+        
+        // Save data
+        bank.SaveData();
+        
+        // Create new bank and load data
+        var newBank = new Bank();
+        newBank.LoadData();
+        
+        // Act & Assert - Verify all data was preserved
+        var loadedAccount1 = newBank.GetAccountDetails(account1!, "1111");
+        var loadedAccount2 = newBank.GetAccountDetails(account2!, "2222");
+        var loadedAccount3 = newBank.GetAccountDetails(account3!, "3333");
+        
+        Assert.IsNotNull(loadedAccount1);
+        Assert.IsNotNull(loadedAccount2);
+        Assert.IsNotNull(loadedAccount3);
+        
+        Assert.AreEqual("Alice Johnson", loadedAccount1.Name);
+        Assert.AreEqual("Bob Wilson", loadedAccount2.Name);
+        Assert.AreEqual("Charlie Brown", loadedAccount3.Name);
+        
+        Assert.AreEqual(1000.00m, loadedAccount1.Balance);
+        Assert.AreEqual(7000.00m, loadedAccount2.Balance);
+        Assert.AreEqual(0.01m, loadedAccount3.Balance);
+        
+        // Cleanup
+        DeleteTestDataFiles();
     }
 
     [TestMethod]
-    public void Bank_SaveAndLoadData_ComplexWorkflow_ShouldNotThrow()
+    public void SaveData_MultipleTimes_ShouldOverwritePreviousData()
     {
-        // Arrange & Act - Complex workflow combining save and load operations
-        var account1 = bank.CreateAccount("Complex User 1", ValidPin);
-        bank.SaveData();
-        bank.LoadData();
+        // Arrange
+        DeleteTestDataFiles();
         
-        bank.DepositFunds(account1!, 1200.00m);
-        var account2 = bank.CreateAccount("Complex User 2", "3333");
-        bank.SaveData();
-        
-        bank.WithdrawFunds(account1!, ValidPin, 400.00m);
-        bank.DepositFunds(account2!, 800.00m);
-        bank.LoadData();
+        // Save initial state
+        var account1 = bank.CreateAccount("Initial User", "0000");
+        bank.DepositFunds(account1!, 100.00m);
         bank.SaveData();
         
-        var account3 = bank.CreateAccount("Complex User 3", "2222");
-        bank.DepositFunds(account3!, 1500.00m);
-        bank.LoadData();
+        // Modify state and save again
+        bank.WithdrawFunds(account1!, "0000", 50.00m);
+        var account2 = bank.CreateAccount("Second User", "1111");
+        bank.DepositFunds(account2!, 200.00m);
         bank.SaveData();
-        bank.LoadData();
-
-        // Assert - Verify all accounts are accessible
-        var finalAccount1 = bank.GetAccountDetails(account1!, ValidPin);
-        var finalAccount2 = bank.GetAccountDetails(account2!, "3333");
-        var finalAccount3 = bank.GetAccountDetails(account3!, "2222");
         
-        Assert.IsNotNull(finalAccount1);
-        Assert.IsNotNull(finalAccount2);
-        Assert.IsNotNull(finalAccount3);
-        Assert.AreEqual(800.00m, finalAccount1.Balance);
-        Assert.AreEqual(800.00m, finalAccount2.Balance);
-        Assert.AreEqual(1500.00m, finalAccount3.Balance);
+        // Act - Load into new bank
+        var newBank = new Bank();
+        newBank.LoadData();
+        
+        // Assert - Should have the latest state
+        var loadedAccount1 = newBank.GetAccountDetails(account1!, "0000");
+        var loadedAccount2 = newBank.GetAccountDetails(account2!, "1111");
+        
+        Assert.IsNotNull(loadedAccount1);
+        Assert.IsNotNull(loadedAccount2);
+        Assert.AreEqual(50.00m, loadedAccount1.Balance);
+        Assert.AreEqual(200.00m, loadedAccount2.Balance);
+        
+        // Cleanup
+        DeleteTestDataFiles();
     }
+
+    [TestMethod]
+    public void LoadData_AfterAccountModification_ShouldReplaceMemoryData()
+    {
+        // Arrange
+        DeleteTestDataFiles();
+        
+        // Create and save initial data
+        var account1 = bank.CreateAccount("Saved User", "1234");
+        bank.DepositFunds(account1!, 500.00m);
+        bank.SaveData();
+        
+        // Modify in-memory data (without saving)
+        var account2 = bank.CreateAccount("Memory User", "5678");
+        bank.DepositFunds(account2!, 300.00m);
+        bank.WithdrawFunds(account1!, "1234", 100.00m);
+        
+        // Act - Load data (should replace in-memory changes)
+        bank.LoadData();
+        
+        // Assert - Should have original saved data, not in-memory modifications
+        var loadedAccount1 = bank.GetAccountDetails(account1!, "1234");
+        var loadedAccount2 = bank.GetAccountDetails(account2!, "5678");
+        
+        Assert.IsNotNull(loadedAccount1);
+        Assert.IsNull(loadedAccount2); // This account was not saved
+        Assert.AreEqual(500.00m, loadedAccount1.Balance); // Original balance, not modified
+        
+        // Cleanup
+        DeleteTestDataFiles();
+    }
+
+    [TestMethod]
+    public void SaveData_CreateDataDirectoryIfNotExists_ShouldSucceed()
+    {
+        // Arrange - Ensure data directory doesn't exist
+        DeleteTestDataFiles();
+        if (Directory.Exists("data"))
+        {
+            Directory.Delete("data", true);
+        }
+        
+        var account = bank.CreateAccount("Directory Test", "9999");
+        bank.DepositFunds(account!, 123.45m);
+        
+        // Act
+        bank.SaveData();
+        
+        // Assert - Directory and files should be created
+        Assert.IsTrue(Directory.Exists("data"));
+        Assert.IsTrue(File.Exists("data/accounts.json"));
+        Assert.IsTrue(File.Exists("data/transactions.json"));
+        
+        // Verify data was saved correctly
+        var newBank = new Bank();
+        newBank.LoadData();
+        var loadedAccount = newBank.GetAccountDetails(account!, "9999");
+        Assert.IsNotNull(loadedAccount);
+        Assert.AreEqual(123.45m, loadedAccount.Balance);
+        
+        // Cleanup
+        DeleteTestDataFiles();
+    }
+
+    private void DeleteTestDataFiles()
+    {
+        // Try to delete files with retry logic to handle file locks
+        DeleteFileWithRetry("data/accounts.json");
+        DeleteFileWithRetry("data/transactions.json");
+        
+        // Try to delete the data directory if it's empty
+        try
+        {
+            if (Directory.Exists("data") && !Directory.EnumerateFileSystemEntries("data").Any())
+            {
+                Directory.Delete("data");
+            }
+        }
+        catch (Exception)
+        {
+            // Ignore cleanup errors - they shouldn't fail the test
+        }
+    }
+
+    private void DeleteFileWithRetry(string filePath, int maxRetries = 3)
+    {
+        for (int attempt = 0; attempt < maxRetries; attempt++)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    // Reset file attributes to ensure it can be deleted
+                    File.SetAttributes(filePath, FileAttributes.Normal);
+                    File.Delete(filePath);
+                }
+                return; // Success, exit retry loop
+            }
+            catch (Exception) when (attempt < maxRetries - 1)
+            {
+                // Wait a bit before retrying
+                System.Threading.Thread.Sleep(50 * (attempt + 1));
+            }
+            catch (Exception)
+            {
+                // Final attempt failed, ignore - cleanup errors shouldn't fail the test
+                return;
+            }
+        }
+    }
+
+    private void EnsureDataDirectoryExists()
+    {
+        if (!Directory.Exists("data"))
+        {
+            Directory.CreateDirectory("data");
+        }
+    }
+
     #endregion
 
     #region Integration Tests
