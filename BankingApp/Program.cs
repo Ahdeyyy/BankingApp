@@ -149,6 +149,12 @@ public class Program
             return;
         }
 
+        if (accountNumber.Length != 11 || !long.TryParse(accountNumber, out _))
+        {
+            Console.WriteLine("Error: Account number must be a 11-digit string.");
+            return;
+        }
+
         Console.Write("Enter PIN: ");
         string? pin = Console.ReadLine();
         
@@ -269,6 +275,12 @@ public class Program
             Console.WriteLine("Error: Account number cannot be empty.");
             return;
         }
+        
+        if (accountNumber.Length != 11 || !long.TryParse(accountNumber, out _))
+        {
+            Console.WriteLine("Error: Account number must be a 11-digit string.");
+            return;
+        }
 
         Console.Write("Enter amount to deposit: $");
         string? amountInput = Console.ReadLine();
@@ -356,6 +368,12 @@ public class Program
             Console.WriteLine("Error: Sender account number cannot be empty.");
             return;
         }
+        
+        if (senderAccount.Length != 11 || !long.TryParse(senderAccount, out _))
+        {
+            Console.WriteLine("Error: Sender account number must be a 11-digit string.");
+            return;
+        }
 
         Console.Write("Enter sender PIN: ");
         string? pin = Console.ReadLine();
@@ -374,12 +392,18 @@ public class Program
             Console.WriteLine("Error: Receiver account number cannot be empty.");
             return;
         }
-
-        if (senderAccount == receiverAccount)
+        
+        if (receiverAccount.Length != 11 || !long.TryParse(receiverAccount, out _))
         {
-            Console.WriteLine("Error: Cannot transfer to the same account.");
+            Console.WriteLine("Error: Receiver account number must be a 11-digit string.");
             return;
         }
+
+        if (senderAccount == receiverAccount)
+            {
+                Console.WriteLine("Error: Cannot transfer to the same account.");
+                return;
+            }
 
         Console.Write("Enter amount to transfer: $");
         string? amountInput = Console.ReadLine();

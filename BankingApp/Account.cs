@@ -19,7 +19,7 @@ namespace BankingApp
         /// <remarks>
         /// Requirements:
         /// - Name, AccountNumber, and Pin should not be null or empty.
-        /// - AccountNumber should be a 9-digit string.
+        /// - AccountNumber should be a 11-digit string.
         /// - Balance should not be negative initially.
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if any input parameters are invalid (e.g., null, empty, or incorrect format).</exception>
@@ -27,8 +27,8 @@ namespace BankingApp
         {
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentException("Name cannot be null or empty.", nameof(name));
-            if (string.IsNullOrEmpty(accountNumber) || accountNumber.Length != 9 || !long.TryParse(accountNumber, out _))
-                throw new ArgumentException("Account number must be a 9-digit string.", nameof(accountNumber));
+            if (string.IsNullOrEmpty(accountNumber) || accountNumber.Length != 11 || !long.TryParse(accountNumber, out _))
+                throw new ArgumentException("Account number must be a 11-digit string.", nameof(accountNumber));
             if (string.IsNullOrEmpty(pin))
                 throw new ArgumentException("Pin cannot be null or empty.", nameof(pin));      
             if (balance < 0)

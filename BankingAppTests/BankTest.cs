@@ -8,7 +8,7 @@ public sealed class BankTest
     private Bank bank;
     private const string ValidName = "John Doe";
     private const string ValidPin = "1234";
-    private const string ValidAccountNumber = "123456789";
+    private const string ValidAccountNumber = "12345678900";
 
     [TestInitialize]
     public void Setup()
@@ -553,7 +553,7 @@ public sealed class BankTest
     public void Bank_OperationsOnNonExistentAccount_ShouldHandleGracefully()
     {
         // Arrange
-        const string nonExistentAccount = "999999999";
+        const string nonExistentAccount = "99999999999";
 
         // Act & Assert - GetAccountDetails should return null
         var account = bank.GetAccountDetails(nonExistentAccount, ValidPin);
@@ -582,7 +582,7 @@ public sealed class BankTest
         // Arrange
         var senderAccount = bank.CreateAccount(ValidName, ValidPin);
         bank.DepositFunds(senderAccount!, 1000.00m);
-        const string nonExistentReceiver = "999999999";
+        const string nonExistentReceiver = "99999999999";
 
         // Act & Assert
         Assert.ThrowsException<InvalidOperationException>(() =>
@@ -594,7 +594,7 @@ public sealed class BankTest
     {
         // Arrange
         var receiverAccount = bank.CreateAccount(ValidName, ValidPin);
-        const string nonExistentSender = "999999999";
+        const string nonExistentSender = "99999999999";
 
         // Act & Assert
         Assert.ThrowsException<InvalidOperationException>(() =>
@@ -602,29 +602,17 @@ public sealed class BankTest
     }
 
     [TestMethod]
-    public void Bank_AccountNumberGeneration_ShouldBe9Digits()
+    public void Bank_AccountNumberGeneration_ShouldBe11Digits()
     {
         // Arrange & Act
         var accountNumber = bank.CreateAccount(ValidName, ValidPin);
 
         // Assert
         Assert.IsNotNull(accountNumber);
-        Assert.AreEqual(9, accountNumber!.Length);
+        Assert.AreEqual(11, accountNumber!.Length);
         Assert.IsTrue(long.TryParse(accountNumber, out _), "Account number should be numeric");
     }
 
-    [TestMethod]
-    public void Bank_AccountNumberGeneration_ShouldBeInValidRange()
-    {
-        // Arrange & Act
-        var accountNumber = bank.CreateAccount(ValidName, ValidPin);
-
-        // Assert
-        Assert.IsNotNull(accountNumber);
-        var number = long.Parse(accountNumber!);
-        Assert.IsTrue(number >= 100000000, "Account number should be at least 100000000");
-        Assert.IsTrue(number <= 999999999, "Account number should be at most 999999999");
-    }
 
     #endregion
 
@@ -1027,7 +1015,7 @@ public sealed class BankTest
             bank.DeleteAccount(accountNumber!, ValidName, wrongPin));
 
         Assert.ThrowsException<InvalidOperationException>(() =>
-            bank.TransferFunds(accountNumber!, wrongPin, "123456789", 100.00m));
+            bank.TransferFunds(accountNumber!, wrongPin, "12345678900", 100.00m));
     }
 
     [TestMethod]

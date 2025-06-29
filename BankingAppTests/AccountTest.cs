@@ -6,7 +6,7 @@ namespace BankingAppTests;
 public sealed class AccountTest
 {
     private Bank bank;
-    private const string ValidAccountNumber = "123456789";
+    private const string ValidAccountNumber = "12345678900";
     private const string ValidName = "John Doe";
     private const string ValidPin = "1234";
     private const decimal ValidBalance = 1000.00m;
@@ -68,7 +68,7 @@ public sealed class AccountTest
     [ExpectedException(typeof(ArgumentException))]
     public void Account_Constructor_InvalidAccountNumber_ShouldThrowArgumentException()
     {
-        // Arrange & Act & Assert (account number should be 9 digits)
+        // Arrange & Act & Assert (account number should be 11 digits)
         var account = new Account(ValidName, "123456", ValidPin, ValidBalance);
     }
 
@@ -223,7 +223,7 @@ public sealed class AccountTest
     public void Bank_EditAccount_NonExistentAccount_ShouldThrowInvalidOperationException()
     {
         // Arrange & Act & Assert
-        bank.EditAccount("999999999", ValidPin, "New Name");
+        bank.EditAccount("99999999999", ValidPin, "New Name");
     }
 
     [TestMethod]
@@ -307,7 +307,7 @@ public sealed class AccountTest
     public void Bank_DeleteAccount_NonExistentAccount_ShouldThrowInvalidOperationException()
     {
         // Arrange & Act & Assert
-        bank.DeleteAccount("999999999", ValidName, ValidPin);
+        bank.DeleteAccount("99999999999", ValidName, ValidPin);
     }
 
     [TestMethod]
@@ -399,7 +399,7 @@ public sealed class AccountTest
     public void Bank_GetAccountDetails_NonExistentAccount_ShouldReturnNull()
     {
         // Arrange & Act
-        Account result = bank.GetAccountDetails("999999999", ValidPin);
+        Account result = bank.GetAccountDetails("99999999999", ValidPin);
 
         // Assert
         Assert.IsNull(result);
@@ -472,7 +472,7 @@ public sealed class AccountTest
     public void Bank_DepositFunds_NonExistentAccount_ShouldThrowInvalidOperationException()
     {
         // Arrange & Act & Assert
-        bank.DepositFunds("999999999", 500.00m);
+        bank.DepositFunds("99999999999", 500.00m);
     }
 
     #endregion
@@ -546,7 +546,7 @@ public sealed class AccountTest
     public void Bank_WithdrawFunds_NonExistentAccount_ShouldThrowInvalidOperationException()
     {
         // Arrange & Act & Assert
-        bank.WithdrawFunds("999999999", ValidPin, 500.00m);
+        bank.WithdrawFunds("99999999999", ValidPin, 500.00m);
     }
 
     [TestMethod]
@@ -597,7 +597,7 @@ public sealed class AccountTest
     public void Bank_TransferFunds_NullSenderAccountNumber_ShouldThrowArgumentException()
     {
         // Arrange & Act & Assert
-        bank.TransferFunds(null, ValidPin, "987654321", 500.00m);
+        bank.TransferFunds(null, ValidPin, "98765432100", 500.00m);
     }
 
     [TestMethod]
@@ -605,7 +605,7 @@ public sealed class AccountTest
     public void Bank_TransferFunds_EmptySenderAccountNumber_ShouldThrowArgumentException()
     {
         // Arrange & Act & Assert
-        bank.TransferFunds("", ValidPin, "987654321", 500.00m);
+        bank.TransferFunds("", ValidPin, "98765432100", 500.00m);
     }
 
     [TestMethod]
@@ -613,7 +613,7 @@ public sealed class AccountTest
     public void Bank_TransferFunds_NullSenderPin_ShouldThrowArgumentException()
     {
         // Arrange & Act & Assert
-        bank.TransferFunds(ValidAccountNumber, null, "987654321", 500.00m);
+        bank.TransferFunds(ValidAccountNumber, null, "98765432100", 500.00m);
     }
 
     [TestMethod]
@@ -621,7 +621,7 @@ public sealed class AccountTest
     public void Bank_TransferFunds_EmptySenderPin_ShouldThrowArgumentException()
     {
         // Arrange & Act & Assert
-        bank.TransferFunds(ValidAccountNumber, "", "987654321", 500.00m);
+        bank.TransferFunds(ValidAccountNumber, "", "98765432100", 500.00m);
     }
 
     [TestMethod]
@@ -653,7 +653,7 @@ public sealed class AccountTest
     public void Bank_TransferFunds_NegativeAmount_ShouldThrowArgumentException()
     {
         // Arrange & Act & Assert
-        bank.TransferFunds(ValidAccountNumber, ValidPin, "987654321", -100.00m);
+        bank.TransferFunds(ValidAccountNumber, ValidPin, "98765432100", -100.00m);
     }
 
     [TestMethod]
@@ -661,7 +661,7 @@ public sealed class AccountTest
     public void Bank_TransferFunds_ZeroAmount_ShouldThrowArgumentException()
     {
         // Arrange & Act & Assert
-        bank.TransferFunds(ValidAccountNumber, ValidPin, "987654321", 0.00m);
+        bank.TransferFunds(ValidAccountNumber, ValidPin, "98765432100", 0.00m);
     }
 
     [TestMethod]
@@ -672,7 +672,7 @@ public sealed class AccountTest
         bank.CreateAccount("Receiver", "5678");
 
         // Act & Assert
-        bank.TransferFunds("999999999", ValidPin, "987654321", 500.00m);
+        bank.TransferFunds("99999999999", ValidPin, "98765432100", 500.00m);
     }
 
     [TestMethod]
@@ -684,7 +684,7 @@ public sealed class AccountTest
         bank.DepositFunds(senderAccount!, 1000.00m);
 
         // Act & Assert
-        bank.TransferFunds(senderAccount!, ValidPin, "999999999", 500.00m);
+        bank.TransferFunds(senderAccount!, ValidPin, "99999999999", 500.00m);
     }
 
     [TestMethod]

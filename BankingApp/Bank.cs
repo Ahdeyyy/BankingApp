@@ -66,7 +66,7 @@ namespace BankingApp
             }
             catch (System.Text.Json.JsonException)
             {
-                throw; // Re-throw JsonException as specified in documentation
+                throw new JsonException("Malformed JSON file") ;
             }
             catch (Exception ex)
             {
@@ -96,8 +96,8 @@ namespace BankingApp
                 }
                 catch (IOException) when (attempt < maxRetries - 1)
                 {
-                    // Wait a bit before retrying
-                    Thread.Sleep(50 * (attempt + 1)); // Progressive delay: 50ms, 100ms, 150ms
+                    // Wait a bit before retrying with debounce logic
+                    Thread.Sleep(50 * (attempt + 1));
                 }
             }
             return default(T);
@@ -115,7 +115,7 @@ namespace BankingApp
         {
             try
             {
-                // Ensure the data directory exists
+                
                 string? dataDirectory = Path.GetDirectoryName(AccountsFilePath);
                 if (!string.IsNullOrEmpty(dataDirectory) && !Directory.Exists(dataDirectory))
                 {
@@ -138,7 +138,7 @@ namespace BankingApp
             }
             catch (IOException)
             {
-                throw; // Re-throw IOException as specified
+                throw; 
             }
             catch (Exception ex)
             {
@@ -164,12 +164,12 @@ namespace BankingApp
                     {
                         writer.Write(json);
                     }
-                    return; // Success, exit retry loop
+                    return; 
                 }
                 catch (IOException) when (attempt < maxRetries - 1)
                 {
-                    // Wait a bit before retrying
-                    Thread.Sleep(50 * (attempt + 1)); // Progressive delay: 50ms, 100ms, 150ms
+                    // Wait a bit before retrying with debounce
+                    Thread.Sleep(50 * (attempt + 1)); 
                 }
             }
         }
@@ -204,15 +204,22 @@ namespace BankingApp
             return accountNumber;
         }
 
+
+/// <summary>
+/// Generates a unique 11-digit account number
+/// </summary>
+/// <returns></returns>
         private string GenerateUniqueAccountNumber()
         {
             Random random = new Random();
+            const string chars = "0123456789";
             string accountNumber;
+
             do
             {
-                accountNumber = random.Next(100000000, 999999999).ToString();
+                accountNumber = new string([.. Enumerable.Repeat(chars, 11).Select(s => s[random.Next(s.Length)])]);
             } while (accounts.Any(a => a.AccountNumber == accountNumber));
-            
+
             return accountNumber;
         }
 
@@ -235,6 +242,8 @@ namespace BankingApp
         {
             if (string.IsNullOrEmpty(accountNumber))
                 throw new ArgumentException("Account number cannot be null or empty");
+            if (accountNumber.Length != 11)
+                throw new ArgumentException("Account number must be 11 digits long");
             
             if (string.IsNullOrEmpty(oldPin))
                 throw new ArgumentException("PIN cannot be null or empty");
@@ -272,9 +281,11 @@ namespace BankingApp
         {
             if (string.IsNullOrEmpty(accountNumber))
                 throw new ArgumentException("Account number cannot be null or empty");
+            if (accountNumber.Length != 11)
+                throw new ArgumentException("Account number must be 11 digits long");
             
             if (string.IsNullOrEmpty(name))
-                throw new ArgumentException("Name cannot be null or empty");
+                    throw new ArgumentException("Name cannot be null or empty");
             
             if (string.IsNullOrEmpty(pin))
                 throw new ArgumentException("PIN cannot be null or empty");
@@ -318,15 +329,19 @@ namespace BankingApp
         {
             if (string.IsNullOrEmpty(senderAccountNumber))
                 throw new ArgumentException("Sender account number cannot be null or empty");
+            if (senderAccountNumber.Length != 11)
+                throw new ArgumentException("Sender account number must be 11 digits long");
             
             if (string.IsNullOrEmpty(senderPin))
-                throw new ArgumentException("Sender PIN cannot be null or empty");
+                    throw new ArgumentException("Sender PIN cannot be null or empty");
             
             if (string.IsNullOrEmpty(receiverAccountNumber))
                 throw new ArgumentException("Receiver account number cannot be null or empty");
+            if (receiverAccountNumber.Length != 11)
+                throw new ArgumentException("Receiver account number must be 11 digits long");
             
             if (senderAccountNumber == receiverAccountNumber)
-                throw new ArgumentException("Sender and receiver account numbers must be different");
+                    throw new ArgumentException("Sender and receiver account numbers must be different");
             
             if (amount <= 0)
                 throw new ArgumentException("Amount must be positive");
@@ -367,9 +382,11 @@ namespace BankingApp
         {
             if (string.IsNullOrEmpty(accountNumber))
                 throw new ArgumentException("Account number cannot be null or empty");
+            if (accountNumber.Length != 11)
+                throw new ArgumentException("Account number must be 11 digits long");
             
             if (amount <= 0)
-                throw new ArgumentException("Amount must be positive");
+                    throw new ArgumentException("Amount must be positive");
             
             var account = accounts.FirstOrDefault(a => a.AccountNumber == accountNumber);
             if (account == null)
@@ -399,9 +416,11 @@ namespace BankingApp
         {
             if (string.IsNullOrEmpty(accountNumber))
                 throw new ArgumentException("Account number cannot be null or empty");
+            if (accountNumber.Length != 11)
+                throw new ArgumentException("Account number must be 11 digits long");
             
             if (string.IsNullOrEmpty(pin))
-                throw new ArgumentException("PIN cannot be null or empty");
+                    throw new ArgumentException("PIN cannot be null or empty");
             
             if (amount <= 0)
                 throw new ArgumentException("Amount must be positive");
@@ -436,7 +455,8 @@ namespace BankingApp
         {
             if (string.IsNullOrEmpty(accountNumber))
                 throw new ArgumentException("Account number cannot be null or empty");
-            
+            if (accountNumber.Length != 11)
+                throw new ArgumentException("Account number must be 11 digits long");
             if (string.IsNullOrEmpty(pin))
                 throw new ArgumentException("PIN cannot be null or empty");
             
