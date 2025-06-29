@@ -32,14 +32,14 @@ namespace BankingApp
         /// </remarks>
         /// <exception cref="IOException">Thrown if there are issues reading the files (e.g., file not found, permission denied).</exception>
         /// <exception cref="System.Text.Json.JsonException">Thrown if the JSON data is malformed and cannot be deserialized. (This implies using System.Text.Json library).</exception>
-        public void LoadData()
+        public void LoadData(string accountsFilePath = AccountsFilePath, string transactionsFilePath = TransactionsFilePath)
         {
             try
             {
                 // Load accounts with retry logic
-                if (File.Exists(AccountsFilePath))
+                if (File.Exists(accountsFilePath))
                 {
-                    var loadedAccounts = LoadWithRetry<List<Account>>(AccountsFilePath);
+                    var loadedAccounts = LoadWithRetry<List<Account>>(accountsFilePath);
                     if (loadedAccounts != null)
                     {
                         accounts = loadedAccounts;
@@ -47,9 +47,9 @@ namespace BankingApp
                 }
 
                 // Load transactions with retry logic
-                if (File.Exists(TransactionsFilePath))
+                if (File.Exists(transactionsFilePath))
                 {
-                    var loadedTransactions = LoadWithRetry<List<Transaction>>(TransactionsFilePath);
+                    var loadedTransactions = LoadWithRetry<List<Transaction>>(transactionsFilePath);
                     if (loadedTransactions != null)
                     {
                         transactions = loadedTransactions;
@@ -111,22 +111,22 @@ namespace BankingApp
         /// - The 'data' directory must exist and be writable.
         /// </remarks>
         /// <exception cref="IOException">Thrown if there are issues writing to the files (e.g., permission denied, disk full).</exception>
-        public void SaveData()
+        public void SaveData(string accountsFilePath = AccountsFilePath, string transactionsFilePath = TransactionsFilePath)
         {
             try
             {
                 
-                string? dataDirectory = Path.GetDirectoryName(AccountsFilePath);
+                string? dataDirectory = Path.GetDirectoryName(accountsFilePath);
                 if (!string.IsNullOrEmpty(dataDirectory) && !Directory.Exists(dataDirectory))
                 {
                     Directory.CreateDirectory(dataDirectory);
                 }
 
                 // Save accounts with retry logic
-                SaveWithRetry(AccountsFilePath, accounts);
+                SaveWithRetry(accountsFilePath, accounts);
 
                 // Save transactions with retry logic
-                SaveWithRetry(TransactionsFilePath, transactions);
+                SaveWithRetry(transactionsFilePath, transactions);
             }
             catch (DirectoryNotFoundException)
             {
