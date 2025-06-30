@@ -6,8 +6,8 @@ namespace BankingAppTests;
 public sealed class TransactionTest
 {
     private const string ValidTransactionId = "TXN123456789";
-    private const string ValidAccountId = "123456789";
-    private const string ValidRecipientAccountId = "987654321";
+    private const string ValidAccountId = "12345678901";
+    private const string ValidRecipientAccountId = "98765432100";
     private const decimal ValidAmount = 100.00m;
     private static readonly DateTime ValidTimestamp = DateTime.Now;
 
@@ -274,10 +274,10 @@ public sealed class TransactionTest
         // Arrange
         var transaction = new Transaction(ValidTransactionId, ValidAccountId, "Deposit", ValidAmount, ValidTimestamp, null);
         var newTransactionId = "TXN987654321";
-        var newAccountId = "987654321";
+        var newAccountId = "98765432100";
         var newAmount = 250.00m;
         var newTimestamp = DateTime.Now.AddHours(1);
-        var newRecipientId = "111222333";
+        var newRecipientId = "11122233300";
 
         // Act
         transaction.TransactionId = newTransactionId;

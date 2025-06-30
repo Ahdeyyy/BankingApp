@@ -12,7 +12,7 @@ namespace BankingApp
         /// Initializes a new instance of the Account class.
         /// </summary>
         /// <param name="name">The name of the account holder.</param>
-        /// <param name="accountNumber">The unique 9-digit account number.</param>
+        /// <param name="accountNumber">The unique 11-digit account number.</param>
         /// <param name="pin">The personal identification number for the account.</param>
         /// <param name="balance">The initial balance of the account.</param>
         /// <returns>A new Account object.</returns>

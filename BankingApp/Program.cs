@@ -16,18 +16,17 @@ public class Program
         }
 
         Bank bank = new Bank();
-
-
+        
         try
-        {
-            bank.LoadData();
-            Console.WriteLine("Bank data loaded successfully.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading bank data: {ex.Message}");
-            Console.WriteLine("Starting with an empty bank data.");
-        }
+            {
+                bank.LoadData();
+                Console.WriteLine("Bank data loaded successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading bank data: {ex.Message}");
+                Console.WriteLine("Starting with an empty bank data.");
+            }
 
         
         bool running = true;
@@ -294,14 +293,15 @@ public class Program
         try
         {
             bool success = bank.DepositFunds(accountNumber, amount);
+        
             if (success)
-            {
-                Console.WriteLine($"Successfully deposited ${amount:F2}!");
-            }
-            else
-            {
-                Console.WriteLine("Failed to deposit funds.");
-            }
+                {
+                    Console.WriteLine($"Successfully deposited ${amount:F2}!");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to deposit funds.");
+                }
         }
         catch (Exception ex)
         {

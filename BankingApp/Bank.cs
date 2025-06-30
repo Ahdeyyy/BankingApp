@@ -184,7 +184,7 @@ namespace BankingApp
         /// Requirements:
         /// - Name and pin must not be null or empty.
         /// - Pin should have a minimum length (e.g., 4 characters).
-        /// - A random, unique 9-digit account number will be generated.
+        /// - A random, unique 11-digit account number will be generated.
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if name or pin are invalid.</exception>
         public string? CreateAccount(string name, string pin)
@@ -362,6 +362,17 @@ namespace BankingApp
             
             senderAccount.Balance -= amount;
             receiverAccount.Balance += amount;
+            
+            Transaction transaction = new Transaction(
+                Guid.NewGuid().ToString(),
+                senderAccountNumber,
+                TransactionType.Transfer,
+                amount,
+                DateTime.Now,
+                receiverAccountNumber
+            );
+            transactions.Add(transaction);
+
             return true;
         }
 
@@ -393,6 +404,18 @@ namespace BankingApp
                 throw new InvalidOperationException("Account not found");
             
             account.Balance += amount;
+            
+            Transaction transaction = new Transaction(
+                Guid.NewGuid().ToString(),
+                accountNumber,
+                TransactionType.Deposit,
+                amount,
+                DateTime.Now,
+                null
+            );
+
+            transactions.Add(transaction); 
+
             return true;
         }
 
@@ -436,6 +459,18 @@ namespace BankingApp
                 throw new InvalidOperationException("Insufficient funds");
             
             account.Balance -= amount;
+
+            Transaction transaction = new Transaction(
+                Guid.NewGuid().ToString(),
+                accountNumber,
+                TransactionType.Withdrawal,
+                amount,
+                DateTime.Now,
+                null
+            );
+
+            transactions.Add(transaction);
+
             return true;
         }
 

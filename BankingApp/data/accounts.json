@@ -1,38 +1,20 @@
 [
   {
-    "Name": "John Doe",
-    "AccountNumber": "51368396927",
+    "Name": "jin",
+    "AccountNumber": "08043236979",
     "Pin": "1234",
-    "Balance": 0
+    "Balance": 17655
   },
   {
-    "Name": "Jane Smith",
-    "AccountNumber": "08744887929",
+    "Name": "kk",
+    "AccountNumber": "05925824111",
     "Pin": "1234",
-    "Balance": 0
+    "Balance": 79914995
   },
   {
-    "Name": "Jenn Morra",
-    "AccountNumber": "34343682956",
+    "Name": "ioj",
+    "AccountNumber": "61475489331",
     "Pin": "1234",
-    "Balance": 0
-  },
-  {
-    "Name": "John Jons",
-    "AccountNumber": "82418960040",
-    "Pin": "1234",
-    "Balance": 0
-  },
-  {
-    "Name": "Roy Jones",
-    "AccountNumber": "68146479786",
-    "Pin": "1234",
-    "Balance": 0
-  },
-  {
-    "Name": "Jon Jones",
-    "AccountNumber": "15367857531",
-    "Pin": "1234",
-    "Balance": 0
+    "Balance": 12345
   }
 ]

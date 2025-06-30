@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "TransactionId": "4f852071-3310-41b6-aba0-6ea534a473f0",
+    "AccountId": "08043236979",
+    "Type": 2,
+    "Amount": 50000,
+    "Timestamp": "2025-06-30T20:32:35.6601433+01:00",
+    "RecipientAccountId": "05925824111"
+  },
+  {
+    "TransactionId": "84bef562-11be-47ea-a3b3-cbc2978d96bb",
+    "AccountId": "05925824111",
+    "Type": 1,
+    "Amount": 5000,
+    "Timestamp": "2025-06-30T20:43:29.1020905+01:00",
+    "RecipientAccountId": null
+  }
+]

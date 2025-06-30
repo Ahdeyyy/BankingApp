@@ -1,10 +1,19 @@
+using System.ComponentModel;
+
 namespace BankingApp
 {
     public enum TransactionType
     {
+        [Description("Deposit")]
         Deposit,
+
+        [Description("Withdrawal")]
         Withdrawal,
+
+        [Description("Transfer")]
         Transfer
+        
+    
     }
     
     public class Transaction
@@ -15,7 +24,7 @@ namespace BankingApp
     public TransactionType Type { get; set; }      // e.g., "Deposit", "Withdrawal", "Transfer"
     public decimal Amount { get; set; }
     public DateTime Timestamp { get; set; }
-    public string RecipientAccountId { get; set; } // For transfer transactions, the receiving account
+    public string? RecipientAccountId { get; set; } // For transfer transactions, the receiving account
 
         /// <summary>
         /// Initializes a new instance of the Transaction class.
@@ -34,24 +43,32 @@ namespace BankingApp
         /// - Timestamp should represent a valid date and time.
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if any input parameters are invalid (e.g., null, empty, or incorrect values).</exception>
-        public Transaction(string transactionId, string accountId, string type, decimal amount, DateTime timestamp, string recipientAccountId)
+        public Transaction(string transactionId, string accountId, TransactionType type, decimal amount, DateTime timestamp, string? recipientAccountId)
         {
             if (string.IsNullOrEmpty(transactionId))
                 throw new ArgumentException("Transaction ID cannot be null or empty.", nameof(transactionId));
             if (string.IsNullOrEmpty(accountId))
                 throw new ArgumentException("Account ID cannot be null or empty.", nameof(accountId));
-            if (!Enum.TryParse(type, out TransactionType transactionType))
-                throw new ArgumentException("Invalid transaction type.", nameof(type));
+            
             if (amount <= 0)
                 throw new ArgumentException("Amount must be a positive value.", nameof(amount));
             if (timestamp == default)
                 throw new ArgumentException("Timestamp must be a valid date and time.", nameof(timestamp));
+            if (type == TransactionType.Transfer && string.IsNullOrEmpty(recipientAccountId))
+                throw new ArgumentException("Recipient account ID cannot be null or empty for transfer transactions.", nameof(recipientAccountId));
+            
+            if (recipientAccountId != null && recipientAccountId.Length != 11)
+                throw new ArgumentException("Recipient account ID must be exactly 11 digits long.", nameof(recipientAccountId));
+            if (accountId.Length != 11)
+                throw new ArgumentException("Account ID must be exactly 11 digits long.", nameof(accountId));
+        
 
             this.TransactionId = transactionId;
             this.AccountId = accountId;
-            this.Type = transactionType;
+            this.Type = type;
             this.Amount = amount;
             this.Timestamp = timestamp;
+
             this.RecipientAccountId = recipientAccountId;
         }
       
